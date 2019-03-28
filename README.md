@@ -30,7 +30,7 @@ IP=x.x.x.x
 
 ```
 2. Copy CERTIFICATE.crt, CERTIFICATE.key, and rootCA.crt to the directory where elasticsearch.yml is located.
-- Most likely /etc/elasticsearch
+	- Most likely /etc/elasticsearch
 3. Edit elasticsearch.yml to include the SSL certificate information, enable X-Pack security, and set the X-Pack license to trial.
 ```
 network.host: ["_local_", "x.x.x.x"]
