@@ -1,0 +1,224 @@
+auditbeat.modules:
+
+- module: auditd
+  audit_rules: |
+    -w /var/log/audit/ -k audit
+    -w /etc/audit/ -p wa -k audit
+    -w /etc/libaudit.conf -p wa -k audit
+    -w /etc/audisp/ -p wa -k audit
+    -w /sbin/auditctl -p x -k audit
+    -w /sbin/auditd -p x -k audit
+    -w /usr/share/auditbeat/bin/auditbeat -p x -k audit
+    -w /etc/auditbeat/ -p wa -k audit
+    -a always,exclude -F msgtype=AVC
+    -a always,exclude -F msgtype=CWD
+    -a always,exclude -F msgtype=EOE
+    -a always,exclude -F msgtype=CRYPTO_KEY_USER
+    -a exit,never -F arch=b32 -F dir=/dev/shm -k sharedmemaccess
+    -a exit,never -F arch=b64 -F dir=/dev/shm -k sharedmemaccess
+    -a exit,never -F arch=b32 -F dir=/var/lock/lvm -k locklvm
+    -a exit,never -F arch=b64 -F dir=/var/lock/lvm -k locklvm
+    -w /etc/sysctl.conf -p wa -k suspicious
+    -a always,exit -F perm=x -F auid!=-1 -F path=/sbin/insmod -k suspicious
+    -a always,exit -F perm=x -F auid!=-1 -F path=/sbin/modprobe -k suspicious
+    -a always,exit -F perm=x -F auid!=-1 -F path=/sbin/rmmod -k suspicious
+    -a always,exit -F arch=b64 -S finit_module -S init_module -S delete_module -F auid!=-1 -k suspicious
+    -a always,exit -F arch=b32 -S finit_module -S init_module -S delete_module -F auid!=-1 -k suspicious
+    -a always,exit -F arch=b64 -S kexec_load -k suspicious
+    -a always,exit -F arch=b32 -S sys_kexec_load -k suspicious
+    -w /etc/modprobe.conf -p wa -k suspicious
+    -a exit,always -F arch=b32 -S mknod -S mknodat -k suspicious
+    -a exit,always -F arch=b64 -S mknod -S mknodat -k suspicious
+    -a always,exit -F arch=b64 -S mount -S umount2 -F auid!=-1 -k suspicious
+    -a always,exit -F arch=b32 -S mount -S umount2 -S umount -F auid!=-1 -k suspicious
+    -a always,exit -F arch=b64 -S swapon -S swapoff -F auid!=-1 -k suspicious
+    -a always,exit -F arch=b32 -S swapon -S swapoff -F auid!=-1 -k suspicious
+    -w /etc/localtime -p wa -k suspicious
+    -w /usr/sbin/stunnel -p x -k suspicious
+    -w /etc/cron.allow -p wa -k persistence
+    -w /etc/cron.deny -p wa -k persistence
+    -w /etc/cron.d/ -p wa -k persistence
+    -w /etc/cron.daily/ -p wa -k persistence
+    -w /etc/cron.hourly/ -p wa -k persistence
+    -w /etc/cron.monthly/ -p wa -k persistence
+    -w /etc/cron.weekly/ -p wa -k persistence
+    -w /etc/crontab -p wa -k persistence
+    -w /var/spool/cron/crontabs/ -k persistence
+    -w /etc/bash.bashrc -k persistence
+    -w /etc/environment -k persistence
+    -w /etc/inittab -p wa -k persistence
+    -w /etc/init.d/ -p wa -k persistence
+    -w /etc/init/ -p wa -k persistence
+    -w /etc/aliases -p wa -k persistence
+    -w /etc/group -p wa -k user_perm
+    -w /etc/passwd -p wa -k user_perm
+    -w /etc/gshadow -k user_perm
+    -w /etc/shadow -k user_perm
+    -w /etc/security/opasswd -k user_perm
+    -w /etc/sudoers -p wa -k user_perm
+    -w /usr/bin/passwd -p x -k user_perm
+    -w /usr/sbin/groupadd -p x -k user_perm
+    -w /usr/sbin/groupmod -p x -k user_perm
+    -w /usr/sbin/addgroup -p x -k user_perm
+    -w /usr/sbin/useradd -p x -k user_perm
+    -w /usr/sbin/usermod -p x -k user_perm
+    -w /usr/sbin/adduser -p x -k user_perm
+    -w /etc/login.defs -p wa -k login
+    -w /etc/securetty -p wa -k login
+    -w /var/log/faillog -p wa -k login
+    -w /var/log/lastlog -p wa -k login
+    -w /var/log/tallylog -p wa -k login
+    -a always,exit -F arch=b32 -S sethostname -S setdomainname -k suspicious_config
+    -a always,exit -F arch=b64 -S sethostname -S setdomainname -k suspicious_config
+    -w /etc/hosts -p wa -k suspicious_config
+    -w /etc/sysconfig/network -p wa -k suspicious_config
+    -w /etc/network/ -p wa -k suspicious_config
+    -a always,exit -F dir=/etc/NetworkManager/ -F perm=wa -k suspicious_config
+    -w /etc/netplan/ -p wa -k suspicious_config
+    -w /etc/sysconfig/network-scripts/ -p wa -k suspicious_config
+    -w /etc/issue -p wa -k suspicious_config
+    -w /etc/issue.net -p wa -k suspicious_config
+    -w /etc/ld.so.conf -p wa -k suspicious_config
+    -w /etc/pam.d/ -p wa -k suspicious_config
+    -w /etc/security/limits.conf -p wa -k suspicious_config
+    -w /etc/security/pam_env.conf -p wa -k suspicious_config
+    -w /etc/security/namespace.conf -p wa -k suspicious_config
+    -w /etc/security/namespace.init -p wa -k suspicious_config
+    -w /etc/postfix/ -p wa suspicious
+    -w /etc/ssh/sshd_config -k login
+    -w /bin/systemctl -p x -k power_cmds
+    -w /etc/systemd/ -p wa -k power_cmds
+    -w /etc/selinux/ -p wa -k suspicious_config
+    -a always,exit -F arch=b64 -S open -F dir=/etc -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/bin -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/sbin -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/usr/bin -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/usr/sbin -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/var -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/home -F success=0 -k unauthorized_access
+    -a always,exit -F arch=b64 -S open -F dir=/srv -F success=0 -k unauthorized_access
+    -w /bin/su -p x -k power_cmds
+    -w /usr/bin/sudo -p x -k power_cmds
+    -w /etc/sudoers -p rw -k power_cmds
+    -w /sbin/shutdown -p x -k power_cmds
+    -w /sbin/poweroff -p x -k power_cmds
+    -w /sbin/reboot -p x -k power_cmds
+    -w /sbin/halt -p x -k power_cmds
+    -w /var/run/utmp -p wa -k suspicious
+    -w /var/log/btmp -p wa -k suspicious
+    -w /var/log/wtmp -p wa -k suspicious
+    -a always,exit -F arch=b32 -S chmod -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S chown -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S fchmod -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S fchmodat -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S fchown -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S fchownat -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S fremovexattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S fsetxattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S lchown -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S lremovexattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S lsetxattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S removexattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S setxattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S chmod -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S chown -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S fchmod -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S fchmodat -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S fchown -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S fchownat -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S fremovexattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S fsetxattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S lchown -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S lremovexattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S lsetxattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S removexattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b64 -S setxattr -F auid>=500 -F auid!=4294967295 -k permission_modification
+    -a always,exit -F arch=b32 -S all -k 32bit_api
+    -a exit,always -F arch=b64 -S execve -k process_spawn
+    -a exit,always -F arch=b64 -S execveat -k process_spawn
+    -w /usr/bin/whoami -p x -k recon
+    -w /etc/issue -p r -k recon
+    -w /etc/hostname -p r -k recon
+    -w /usr/bin/wget -p x -k mucking_about
+    -w /usr/bin/curl -p x -k mucking_about
+    -w /usr/bin/base64 -p x -k mucking_about
+    -w /bin/nc -p x -k mucking_about
+    -w /bin/netcat -p x -k mucking_about
+    -w /usr/bin/ncat -p x -k mucking_about
+    -w /usr/bin/ssh -p x -k mucking_about
+    -w /usr/bin/socat -p x -k mucking_about
+    -w /usr/bin/wireshark -p x -k mucking_about
+    -w /usr/bin/rawshark -p x -k mucking_about
+    -w /usr/bin/rdesktop -p x -k mucking_about
+    -w /sbin/iptables -p x -k mucking_about
+    -w /sbin/ifconfig -p x -k mucking_about
+    -w /usr/sbin/tcpdump -p x -k mucking_about
+    -w /usr/sbin/traceroute -p x -k mucking_about
+    -a always,exit -F arch=b32 -S ptrace -k tracing
+    -a always,exit -F arch=b64 -S ptrace -k tracing
+    -a always,exit -F arch=b32 -S ptrace -F a0=0x4 -k tracing
+    -a always,exit -F arch=b64 -S ptrace -F a0=0x4 -k tracing
+    -a always,exit -F arch=b32 -S ptrace -F a0=0x5 -k tracing
+    -a always,exit -F arch=b64 -S ptrace -F a0=0x5 -k tracing
+    -a always,exit -F arch=b32 -S ptrace -F a0=0x6 -k tracing
+    -a always,exit -F arch=b64 -S ptrace -F a0=0x6 -k tracing
+    -w /usr/bin/rpm -p x -k install
+    -w /usr/bin/yum -p x -k install
+    -w /sbin/yast -p x -k install
+    -w /sbin/yast2 -p x -k install
+    -w /bin/rpm -p x -k install
+    -w /usr/bin/zypper -p x -k install
+    -w /usr/bin/dpkg -p x -k install
+    -w /usr/bin/apt-add-repository -p x -k install
+    -w /usr/bin/apt-get -p x -k install
+    -w /usr/bin/aptitude -p x -k install
+
+
+- module: file_integrity
+  paths:
+  - /bin
+  - /usr/bin
+  - /sbin
+  - /usr/sbin
+  - /etc
+  - /usr/lib
+  - /lib
+  - /lib64
+  exclude_files:
+  - '(?i)\.sw[nop]$'
+  - '~$'
+  - '/\.git($|/)'
+  scan_at_start: true
+  hash_types: [sha1]
+  recursive: true
+
+- module: system
+  datasets:
+    - host
+    - user
+  state.period: 15s
+  user.detect_password_changes: true
+
+setup.template.settings:
+  index.number_of_shards: 3
+
+setup.kibana:
+  host: "https://<host>:<port>"
+  username: ''
+  password: ''
+  ssl.certificate_authorities: ['<path to root CA cert>']
+  ssl.certificate: '<path to ssl cert>'
+  ssl.key: '<path to key>'
+
+output.elasticsearch:
+  hosts: ["https://<host>:<port>"]
+  protocol: "https"
+  username: ''
+  password: ''
+  ssl.certificate_authorities: ['<path to root CA cert>']
+  ssl.certificate: '<path to ssl cert>'
+  ssl.key: '<path to key>'
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
