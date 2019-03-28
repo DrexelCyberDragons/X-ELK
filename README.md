@@ -25,7 +25,7 @@ CN=HOSTNAME
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1=CERTIFICATE
+DNS.1=HOSTNAME
 IP=x.x.x.x
 
 ```
